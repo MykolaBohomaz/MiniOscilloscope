@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  host-tests:
+    name: Host unit tests (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S tests -B build-tests -DSCOPE_SANITIZE=ON
+      - name: Build
+        run: cmake --build build-tests -j
+      - name: Run
+        run: ctest --test-dir build-tests --output-on-failure
+
+  firmware:
+    name: Firmware build (arm-none-eabi, -Werror on app code)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi ninja-build
+      - name: Build
+        run: |
+          cmake -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi.cmake
+          cmake --build build
+      - name: Timebase table is up to date
+        run: |
+          python3 tools/gen_timebase.py > /dev/null
+          git diff --exit-code Core/App/timebase_table.c
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            build/scope.elf
+            build/scope.hex
+            build/scope.bin
+            build/scope.map
+
+  static-analysis:
+    name: cppcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cppcheck
+      - run: >
+          cppcheck --enable=warning,performance,portability --std=c11
+          --error-exitcode=1 --inline-suppr -q -I Core/App
+          Core/App/crc32.c Core/App/protocol.c Core/App/trigger.c Core/App/acq_engine.c
+          Core/App/measure.c Core/App/decimate.c Core/App/calib.c Core/App/timebase.c
+          Core/App/timebase_table.c Core/App/gfx.c Core/App/font5x7.c Core/App/ui_format.c
+          Core/App/ui_menu.c Core/App/ui_render.c Core/App/scope_settings.c
+
+  python:
+    name: Host utility tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyserial pyflakes
+      - run: python -m pyflakes tools
+      - run: python -m unittest discover -s tools/tests -v
