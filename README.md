@@ -2,8 +2,6 @@
 
 A bare-metal digital storage oscilloscope for the **STM32L432KC** (Cortex-M4F, 80 MHz). Timer-paced 12-bit sampling runs at up to 5 MS/s through DMA into a 16 k-sample ring. On top of that sit a software edge trigger with pre-trigger history, automatic measurements, a 192×96 ST75256 LCD driven by SPI DMA, and a CRC-checked binary protocol with a Python host utility.
 
-The project is built to be *measured, not claimed*. Each performance figure is either derived from the clock tree (and labelled as such) or waits for a result in the [validation plan](docs/validation-plan.md).
-
 <p align="center">
   <img src="docs/img/screen_sine_1k.png" width="32%" alt="1 kHz sine, 500 us/div">
   <img src="docs/img/screen_square_10k.png" width="32%" alt="10 kHz 25% square, falling-edge trigger, 20% pre-trigger">
