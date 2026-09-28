@@ -1,16 +1,23 @@
 /**
  * @file    lcd_st75256.c
  *
- * ST75256 protocol notes (Sitronix ST75256 datasheet):
- *   - A0 = 0 marks a command byte, A0 = 1 marks parameter *and* display data.
- *   - Commands live in two "extension" sets selected with 0x30 (EXT1) and
- *     0x31 (EXT2).
- *   - 0x15 / 0x75 set the column / page window; 0x5C starts a RAM write and the
- *     address auto-increments inside the window, so one burst covers the frame.
+ * Everything below is from the Sitronix ST75256 datasheet v1.4 and the
+ * EastRising ERM19296-1 module datasheet (rev 1.0):
+ *   - A0 = 0 marks a command byte; every command *parameter* and all display
+ *     data go out with A0 = 1 (all parameter rows in section 9.2 show A0 = 1).
+ *   - Commands live in extension sets selected by 0x30 (EXT1) / 0x31 (EXT2).
+ *   - 0x15 / 0x75 set the column / page window. 0x5C resets the address to
+ *     (XS, YS); the column address then auto-increments, the page address
+ *     increments when the column passes XE and wraps to YS past YE (9.2.7,
+ *     9.2.8, 9.2.10). One DMA burst therefore covers a whole frame.
+ *   - Serial timing (14.3): tSCYC >= 80 ns, so SCL <= 12.5 MHz; SDA is latched
+ *     on the rising edge of SCL, which is SPI mode 0. The bring-up prescaler
+ *     of /16 gives 5 MHz; /8 (10 MHz) is still inside the spec.
+ *   - Reset (14.6): RSTB low >= 1 ms (tRW), reset completes within 1 ms (tR).
  *
- * The init table below follows the controller datasheet's recommended power-up
- * order. Contrast (Vop), bias and duty depend on the glass and must be tuned
- * on the real module - see docs/bringup-checklist.md.
+ * The init sequence follows the power-on flow of section 10.1. Contrast (Vop)
+ * is the one value that depends on the individual glass - see
+ * docs/bringup-checklist.md.
  */
 #include "lcd_st75256.h"
 #include "board.h"
@@ -25,20 +32,30 @@
 static const uint16_t k_init_seq[] = {
     CMD(0x30),                          /* EXT1                                    */
     CMD(0x94),                          /* sleep out                               */
-    DELAY(50),
-    CMD(0xAE),                          /* display off                             */
+    DELAY(50), CMD(0xAE),                          /* display off                             */
     CMD(0x31),                          /* EXT2                                    */
     CMD(0xD7), DAT(0x9F),               /* disable auto-read (OTP)                 */
-    CMD(0x32), DAT(0x00), DAT(0x01), DAT(0x03), /* analog: booster eff, bias 1/11 */
-    CMD(0x51), DAT(0xFA),               /* booster level x10                       */
+    /* 9.2.32 analog circuit set: reserved 0, booster efficiency 6 kHz (default),
+     * LCD bias 1/11 - the bias the ERM19296-1 module datasheet specifies. */
+    CMD(0x32), DAT(0x00), DAT(0x01), DAT(0x03),
+    /* 9.2.33 booster level: D0 = BST, 1 = x10 (default), 0 = x8. */
+    CMD(0x51), DAT(0xFB),
     CMD(0x30),                          /* EXT1                                    */
     CMD(0x20), DAT(0x0B),               /* power control: booster+reg+follower on  */
     DELAY(20),
-    CMD(0x81), DAT(LCD_VOP_DEFAULT & 0x3Fu), DAT((LCD_VOP_DEFAULT >> 6) & 0x07u), /* Vop */
-    CMD(0xCA), DAT(0x00), DAT(0x5F), DAT(0x00), /* display ctrl: CLD, duty 1/96, FR */
-    CMD(0xF0), DAT(0x10),               /* monochrome mode (1 bit/pixel)           */
-    CMD(0xBC), DAT(0x00),               /* data scan direction: column-major, normal */
-    CMD(0x0C),                          /* data format: D0 = top pixel of a page   */
+    /* 9.2.21 Vop: V0 = 3.6 V + Vop[8:0] x 0.04 V, split 6 bits then 3 bits. */
+    CMD(0x81), DAT(LCD_VOP_DEFAULT & 0x3Fu), DAT((LCD_VOP_DEFAULT >> 6) & 0x07u),
+    /* 9.2.25 display control: CLD = 0 (no clock division), DT = duty - 1 = 95
+     * for this 1/96-duty module, LF/FI = 0 (frame inversion, the default). */
+    CMD(0xCA), DAT(0x00), DAT(0x5F), DAT(0x00),
+    /* 9.2.28 display mode: DM = 0 -> monochrome, 1 bit per pixel. */
+    CMD(0xF0), DAT(0x10),
+    /* 9.2.9 data scan direction: MV = MX = MY = 0 (column direction, normal).
+     * Change to 0x03 if the image comes out rotated 180 degrees. */
+    CMD(0xBC), DAT(0x00),
+    /* 9.2.27 data format: DO = 1 -> "LSB on top", D0 is the topmost pixel of a
+     * page, which is what gfx.c writes. 0x08 would flip every 8-pixel band. */
+    CMD(0x0C),
     CMD(0xA6),                          /* normal (non-inverted) display           */
     CMD(0xAF),                          /* display on                              */
     END

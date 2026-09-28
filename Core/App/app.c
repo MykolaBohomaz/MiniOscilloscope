@@ -1,7 +1,6 @@
 /**
  * @file    app.c
  * @brief   Cooperative, event-driven superloop (no RTOS).
- *
  * Every pass services independent state machines in a fixed order; none of
  * them blocks. Time-critical work (sampling, SPI and UART transfers) happens
  * in hardware/DMA, ISRs only publish flags (see hal_callbacks.c).
@@ -250,8 +249,7 @@ static void apply_changes(uint32_t chg)
         siggen_apply(s_set.gen_wave, s_set.gen_freq, s_vdda_mv);
     }
     if (chg & CHG_BACKLIGHT) {
-        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4,
-                              (BACKLIGHT_PWM_MAX + 1u) * s_set.backlight / 10u);
+        __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, backlight_compare(s_set.backlight));
     }
     s_dirty = true;
 }

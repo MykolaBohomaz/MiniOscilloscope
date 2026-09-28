@@ -13,7 +13,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/* ---- module-dependent parameters (VERIFY on the actual panel) -------------- */
+/* ---- module-dependent parameters ------------------------------------------- */
+/* The ST75256 drives 256 columns x 162 lines; the ERM19296-1 glass uses
+ * 192 x 96 of that. The offsets below say where the glass starts. Both are 0
+ * unless bring-up shows the image shifted. */
 /** First controller column wired to the glass (ST75256 has 256 columns). */
 #ifndef LCD_COL_OFFSET
 #define LCD_COL_OFFSET   0u
@@ -22,7 +25,11 @@
 #ifndef LCD_PAGE_OFFSET
 #define LCD_PAGE_OFFSET  0u
 #endif
-/** Contrast (Vop) default, 9-bit value split over two parameter bytes. */
+/**
+ * Contrast: 9-bit Vop code. V0 = 3.6 V + code x 0.04 V (datasheet 9.2.21), so
+ * 0x118 (280) = 14.8 V. Usable range per the datasheet is 7.00 V .. 18.00 V
+ * (codes 0x55 .. 0x168). This is the value to tune per panel.
+ */
 #ifndef LCD_VOP_DEFAULT
 #define LCD_VOP_DEFAULT  0x0118u
 #endif

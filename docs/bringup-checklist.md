@@ -46,20 +46,28 @@ steps rely on.
 
 ## 5. Display (ERM19296FSF-1 / ST75256)
 
-Wiring: SCK = A1 (PA1), MOSI = A6 (PA7), CS = D3 (PB0), A0/DC = D6 (PB1),
-RST = D12 (PB4), backlight gate = A2 (PA3).
+Full pin table in [hardware.md](hardware.md). Short version: SCL = module pin 18
+→ A1, SDA = pins 15–17 tied together → A6, CSB = pin 10 → D3, A0 = pin 8 → D6,
+RSTB = pin 9 → D12, VDD = pin 7 → 3V3, VSS = pin 6 → GND, and **pins 11–14, 19
+and 20 to +3V3** (the datasheet requires D[7:4], ERD and RWR tied high in serial
+mode). Backlight (pin 5, LEDA) switches on the high side from +3V3 through a
+P-channel MOSFET; there is no LEDK pin.
 
-- [ ] Something appears after reset. If nothing does, check the SPI mode (the
-      firmware uses mode 0) and try raising `LCD_VOP_DEFAULT` (contrast)
-      in `lcd_st75256.h`.
-- [ ] Image upside-down or mirrored: change the `0xBC` data-scan parameter.
-- [ ] Each 8-pixel band is flipped vertically: swap `0x0C` for `0x08`
-      (data bit order).
-- [ ] Image shifted: set `LCD_COL_OFFSET` / `LCD_PAGE_OFFSET` for how the glass is
-      wired to the controller's 256 columns × 160 COM lines.
-- [ ] Only the first 8 rows update: the controller is not auto-incrementing
-      across pages. Fall back to one DMA transfer per page (see the handoff, 8.4).
-- [ ] Once stable, raise SPI to /8 (10 MHz) in CubeMX and re-check.
+- [ ] Before wiring: confirm the interface straps on the module select 4-wire
+      SPI (IF2, IF1, IF0 = L, L, L). They are not on the header.
+- [ ] Nothing on screen: this is almost always the straps, the six tie-high
+      pins, or contrast. Tune `LCD_VOP_DEFAULT` in `lcd_st75256.h`
+      (V0 = 3.6 V + code × 0.04 V; 0x118 = 14.8 V; usable 7–18 V).
+- [ ] Image upside-down or mirrored: `0xBC` parameter, MV/MX/MY bits (0x03
+      rotates 180°).
+- [ ] Each 8-pixel band flipped vertically: swap `0x0C` for `0x08` (data format
+      DO bit).
+- [ ] Image shifted: set `LCD_COL_OFFSET` / `LCD_PAGE_OFFSET` for where the glass
+      sits in the controller's 256 × 162 DDRAM.
+- [ ] Backlight stays on at full brightness: the P-FET gate is being pulled low
+      — check the 100 kΩ pull-up and `BACKLIGHT_ACTIVE_LOW` in `board.h`.
+- [ ] Once stable, raise SPI to /8 (10 MHz, still under the 12.5 MHz the
+      datasheet allows) in CubeMX and re-check.
 - [ ] `status` → `lcd_frames` increases at 20 FPS or more (V9).
 
 ## 6. Controls
