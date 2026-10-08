@@ -119,6 +119,9 @@ class Device:
     def set_gen(self, wave: int, freq_index: int):
         self.command(sp.SET_SIGGEN, bytes([wave, freq_index]))
 
+    def set_contrast(self, code: int):
+        self.command(sp.SET_CONTRAST, struct.pack("<H", code))
+
     def capture(self, current=False, timeout=5.0):
         """Return (header, samples) of one record, verifying chunk and record CRCs."""
         seq = self.send(sp.GET_CAPTURE, bytes([1 if current else 0]))
@@ -246,6 +249,25 @@ def cmd_capture(dev, args):
         plt.show()
 
 
+def cmd_contrast(dev, args):
+    """Set the LCD drive voltage, or sweep it so you can pick the best value."""
+    if args.sweep:
+        print("watch the screen; note the volts where it looks best, then set it")
+        v = args.start
+        while v <= args.stop + 1e-9:
+            code = sp.vop_code(v)
+            dev.set_contrast(code)
+            print(f"  {v:5.1f} V   (code {code}, --code {code})", flush=True)
+            time.sleep(args.dwell)
+            v += args.step
+        print("sweep done - the last value is still active")
+        return
+    code = args.code if args.code is not None else sp.vop_code(args.volts)
+    dev.set_contrast(code)
+    print(f"contrast set to {sp.vop_volts(code):.2f} V (code {code})")
+    print("run 'scope.py cal save' to keep it across power cycles")
+
+
 def cmd_cal(dev, args):
     if args.action == "get":
         f = dev.request(sp.CAL_GET, bytes([args.range]), reply=sp.CAL)
@@ -326,7 +348,7 @@ def cmd_selftest(dev, args):
     lines += ["", f"**{'PASS' if failures == 0 else f'FAIL ({failures})'}**", "",
               "Note: the DAC and ADC share the same 80 MHz clock, so the frequency check "
               "validates the trigger/measurement chain, not the absolute clock accuracy "
-              "(see docs/validation-plan.md, test V1)."]
+              "(that is measured separately with `bench.py clock`)."]
     text = "\n".join(lines) + "\n"
     print(text)
     if args.report:
@@ -362,6 +384,16 @@ def main():
     p.add_argument("--plot", action="store_true")
     p.add_argument("--current", action="store_true", help="send the frozen record (after SINGLE/STOP)")
     p.set_defaults(fn=cmd_capture)
+    p = sub.add_parser("contrast", help="LCD drive voltage (Vop)")
+    p.add_argument("volts", type=float, nargs="?", default=12.0,
+                   help="LCD drive voltage, 7.0-18.0 (default 12.0)")
+    p.add_argument("--code", type=int, help="raw Vop code instead of volts")
+    p.add_argument("--sweep", action="store_true", help="step through the range")
+    p.add_argument("--start", type=float, default=8.0)
+    p.add_argument("--stop", type=float, default=16.0)
+    p.add_argument("--step", type=float, default=0.5)
+    p.add_argument("--dwell", type=float, default=1.5, help="seconds per step")
+    p.set_defaults(fn=cmd_contrast)
     p = sub.add_parser("cal")
     p.add_argument("action", choices=["get", "set", "save"])
     p.add_argument("--range", type=int, default=0)

@@ -31,6 +31,7 @@ typedef struct {
     gen_wave_t  gen_wave;
     uint8_t     gen_freq;      /**< index into g_gen_freq_hz             */
     uint8_t     backlight;     /**< 0..10 (x10 %)                        */
+    uint16_t    lcd_vop;       /**< LCD drive voltage code, V0 = 3.6 V + code x 0.04 V */
     bool        running;       /**< RUN/STOP                             */
 } scope_settings_t;
 

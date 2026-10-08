@@ -2,6 +2,7 @@
  * @file    scope_settings.c
  */
 #include "scope_settings.h"
+#include "lcd_st75256.h"
 #include "scope_config.h"
 #include "timebase.h"
 
@@ -19,6 +20,7 @@ void scope_settings_default(scope_settings_t *s)
     s->gen_wave = GEN_OFF;
     s->gen_freq = 1u;
     s->backlight = 5u;
+    s->lcd_vop = LCD_VOP_DEFAULT;
     s->running = true;
 }
 
@@ -35,4 +37,5 @@ void scope_settings_sanitize(scope_settings_t *s)
     if ((unsigned)s->gen_wave >= (unsigned)GEN_WAVE_COUNT) { s->gen_wave = GEN_OFF; }
     if (s->gen_freq >= GEN_FREQ_COUNT) { s->gen_freq = 1u; }
     if (s->backlight > 10u) { s->backlight = 10u; }
+    if (s->lcd_vop < LCD_VOP_MIN || s->lcd_vop > LCD_VOP_MAX) { s->lcd_vop = LCD_VOP_DEFAULT; }
 }

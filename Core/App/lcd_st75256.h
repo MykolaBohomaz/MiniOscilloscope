@@ -31,8 +31,13 @@
  * (codes 0x55 .. 0x168). This is the value to tune per panel.
  */
 #ifndef LCD_VOP_DEFAULT
-#define LCD_VOP_DEFAULT  0x0118u
+#define LCD_VOP_DEFAULT  0x00D2u      /* 12.0 V */
 #endif
+/** Datasheet's usable window: 7.00 V .. 18.00 V. */
+#define LCD_VOP_MIN      0x0055u
+#define LCD_VOP_MAX      0x0168u
+/** Volts <-> code helpers (V0 = 3.6 V + code x 0.04 V). */
+#define LCD_VOP_FROM_MV(mv)  (uint16_t)(((mv) - 3600) / 40)
 
 void lcd_init(void);
 bool lcd_busy(void);

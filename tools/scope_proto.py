@@ -20,6 +20,7 @@ MAX_PAYLOAD = 1024
 # message types
 PING, GET_INFO, GET_STATUS = 0x01, 0x02, 0x03
 SET_RUN, SET_TIMEBASE, SET_TRIGGER, SET_SIGGEN = 0x10, 0x11, 0x12, 0x14
+SET_CONTRAST = 0x15
 GET_CAPTURE, GET_MEAS = 0x20, 0x21
 CAL_GET, CAL_SET, CAL_SAVE, RESET_STATS = 0x30, 0x31, 0x32, 0x3F
 ACK, INFO, STATUS, MEAS, CAL, PONG = 0x80, 0x81, 0x82, 0x83, 0x84, 0x8F
@@ -208,6 +209,15 @@ def parse_meas(p: bytes) -> dict:
     return dict(valid=bool(flags & 1), periodic=bool(flags & 2), clipped=bool(flags & 4),
                 vpp_mv=vpp, vavg_mv=vavg, vrms_mv=vrms, freq_hz=f, duty_pct=duty,
                 min_code=mn, max_code=mx)
+
+
+def vop_code(volts: float) -> int:
+    """LCD drive voltage -> ST75256 Vop code. V0 = 3.6 V + code x 0.04 V."""
+    return max(0x55, min(0x168, round((volts - 3.6) / 0.04)))
+
+
+def vop_volts(code: int) -> float:
+    return 3.6 + code * 0.04
 
 
 def trigger_payload(level: int, hyst: int, edge: int, mode: int, pre: int) -> bytes:

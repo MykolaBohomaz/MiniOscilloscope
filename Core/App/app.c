@@ -1,6 +1,7 @@
 /**
  * @file    app.c
  * @brief   Cooperative, event-driven superloop (no RTOS).
+ *
  * Every pass services independent state machines in a fixed order; none of
  * them blocks. Time-critical work (sampling, SPI and UART transfers) happens
  * in hardware/DMA, ISRs only publish flags (see hal_callbacks.c).
@@ -79,6 +80,7 @@ static uint8_t  s_back;               /* index of the buffer we draw into */
 static bool     s_back_ready;
 static bool     s_dirty = true;
 static uint32_t s_last_render_ms;
+static uint16_t s_pending_vop;        /* applied when the SPI bus is free */
 static menu_item_t s_sel = MENU_TIMEBASE;
 static trig_mode_t s_mode_before_single = TRIG_MODE_AUTO;
 
@@ -577,6 +579,19 @@ static void on_frame(const proto_frame_t *f)
         break;
     }
 
+    case MSG_SET_CONTRAST: {
+        if (f->len != 2u) { send_ack(f->type, f->seq, ACK_BAD_LEN); break; }
+        const uint16_t vop = get_u16(&a[0]);
+        if (vop < LCD_VOP_MIN || vop > LCD_VOP_MAX) {
+            send_ack(f->type, f->seq, ACK_BAD_ARG);
+            break;
+        }
+        s_set.lcd_vop = vop;
+        s_pending_vop = vop;           /* applied from the display service */
+        send_ack(f->type, f->seq, ACK_OK);
+        break;
+    }
+
     case MSG_SET_SIGGEN:
         if (f->len != 2u || a[0] >= GEN_WAVE_COUNT || a[1] >= GEN_FREQ_COUNT) {
             send_ack(f->type, f->seq, ACK_BAD_ARG);
@@ -756,6 +771,10 @@ static void service_display(uint32_t now)
     if (stop_imminent()) {
         return;
     }
+    if (s_pending_vop != 0u && !lcd_busy()) {
+        lcd_set_contrast(s_pending_vop);
+        s_pending_vop = 0u;
+    }
     /* Draw the next frame into the back buffer while the previous one may
      * still be going out over SPI DMA; flush as soon as the bus is free. */
     if (!s_back_ready && (now - s_last_render_ms) >= UI_FRAME_PERIOD_MS &&
@@ -806,6 +825,7 @@ void app_init(void)
     (void)HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
     input_init();
     lcd_init();
+    lcd_set_contrast(s_set.lcd_vop);     /* stored or default contrast */
 
     char msg[96];
     snprintf(msg, sizeof msg, "boot fw %u.%u.%u faults=0x%02lx vdda=%ldmV settings=%s",

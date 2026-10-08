@@ -24,3 +24,8 @@
 __pycache__/
 *.pyc
 .venv/
+
+# prebuilt firmware is committed on purpose (flash without a toolchain)
+!/prebuilt/*.bin
+!/prebuilt/*.hex
+!/prebuilt/*.elf

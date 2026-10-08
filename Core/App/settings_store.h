@@ -13,7 +13,7 @@
 #define SETTINGS_FLASH_ADDR   0x0803F800u
 #define SETTINGS_FLASH_PAGE   127u
 #define SETTINGS_MAGIC        0x53434F50u   /* "SCOP" */
-#define SETTINGS_VERSION      1u
+#define SETTINGS_VERSION      2u
 
 /**
  * Called first thing in NMI_Handler. A power loss during a save can leave a

@@ -1,0 +1,184 @@
+{
+  "noise_floor_gnd": {
+    "condition": "A0 shorted to GND, backlight on",
+    "label": "gnd",
+    "measured_at": "2026-10-08 12:22:58",
+    "rows": [
+      {
+        "clipped_pct": 59.0,
+        "mean_code": 0.545,
+        "mean_mv": 0.43959207440237713,
+        "n": 200,
+        "pp_codes": 3,
+        "pp_mv": 2.4197728866185897,
+        "rms_codes": 0.7536411612962763,
+        "rms_mv": 0.6078801494481589,
+        "sample_rate": 5000000.0,
+        "timebase_index": 0
+      },
+      {
+        "clipped_pct": 38.975,
+        "mean_code": 0.858375,
+        "mean_mv": 0.6923575171837439,
+        "n": 8000,
+        "pp_codes": 4,
+        "pp_mv": 3.226363848824786,
+        "rms_codes": 0.8197971452591184,
+        "rms_mv": 0.6612409682084454,
+        "sample_rate": 5000000.0,
+        "timebase_index": 5
+      },
+      {
+        "clipped_pct": 89.270245439034,
+        "mean_code": 0.13072581703635647,
+        "mean_mv": 0.10544226254854597,
+        "n": 15238,
+        "pp_codes": 3,
+        "pp_mv": 2.4197728866185897,
+        "rms_codes": 0.4014341474657014,
+        "rms_mv": 0.32379315526678426,
+        "sample_rate": 1904761.9047619049,
+        "timebase_index": 7
+      },
+      {
+        "clipped_pct": 87.7435329380335,
+        "mean_code": 0.15077865380856192,
+        "mean_mv": 0.12161669945560297,
+        "n": 15347,
+        "pp_codes": 3,
+        "pp_mv": 2.4197728866185897,
+        "rms_codes": 0.4311680909593864,
+        "rms_mv": 0.34777628535954036,
+        "sample_rate": 95923.26139088729,
+        "timebase_index": 11
+      },
+      {
+        "clipped_pct": 88.23414507097279,
+        "mean_code": 0.27705430394582625,
+        "mean_mv": 0.22346949760303203,
+        "n": 15358,
+        "pp_codes": 99,
+        "pp_mv": 79.85250525841346,
+        "rms_codes": 2.9901750600936214,
+        "rms_mv": 2.4118481788858857,
+        "sample_rate": 19198.46412287017,
+        "timebase_index": 13
+      }
+    ]
+  },
+  "noise_floor_midscale": {
+    "condition": "2k/1k divider from 3V3, ~1.1 V, backlight on",
+    "label": "midscale",
+    "measured_at": "2026-10-08 12:26:46",
+    "rows": [
+      {
+        "clipped_pct": 0.0,
+        "mean_code": 1326.65,
+        "mean_mv": 1070.0639000108506,
+        "n": 200,
+        "pp_codes": 10,
+        "pp_mv": 8.065909622061966,
+        "rms_codes": 1.4585952145814822,
+        "rms_mv": 1.1764897175986315,
+        "sample_rate": 5000000.0,
+        "timebase_index": 0
+      },
+      {
+        "clipped_pct": 0.0,
+        "mean_code": 1326.342875,
+        "mean_mv": 1069.816175761583,
+        "n": 8000,
+        "pp_codes": 13,
+        "pp_mv": 10.485682508680554,
+        "rms_codes": 1.471499824796116,
+        "rms_mv": 1.1868984595685488,
+        "sample_rate": 5000000.0,
+        "timebase_index": 5
+      },
+      {
+        "clipped_pct": 0.0,
+        "mean_code": 1356.2961018506367,
+        "mean_mv": 1093.9761778282186,
+        "n": 15238,
+        "pp_codes": 22,
+        "pp_mv": 17.745001168536323,
+        "rms_codes": 1.351621030475194,
+        "rms_mv": 1.0902053075091176,
+        "sample_rate": 1904761.9047619049,
+        "timebase_index": 7
+      },
+      {
+        "clipped_pct": 0.0,
+        "mean_code": 1357.1834234703852,
+        "mean_mv": 1094.6918834272778,
+        "n": 15347,
+        "pp_codes": 20,
+        "pp_mv": 16.131819244123932,
+        "rms_codes": 1.460691545431487,
+        "rms_mv": 1.1781805991160395,
+        "sample_rate": 95923.26139088729,
+        "timebase_index": 11
+      },
+      {
+        "clipped_pct": 0.0,
+        "mean_code": 1357.0755957807007,
+        "mean_mv": 1094.6049105873028,
+        "n": 15358,
+        "pp_codes": 615,
+        "pp_mv": 496.05344175681086,
+        "rms_codes": 15.059151575846107,
+        "rms_mv": 12.146575559570673,
+        "sample_rate": 19198.46412287017,
+        "timebase_index": 13
+      }
+    ]
+  },
+  "timing_m5": {
+    "instrument": "Tektronix MDO3014, 20 ms/div, 10M points, 50 MS/s, measurement statistics",
+    "measured_at": "2026-10-08 18:18:19",
+    "note": "Record processing dominates dead time at slow timebases; sampling is stopped while it runs, so no data is lost.",
+    "probes": "CH1 = LCD CS (PB0, Nucleo CN3-6), CH2 = DBG1 (PA11, Nucleo CN3-13); 1 kHz DAC sine on A0, AUTO trigger",
+    "rows": [
+      {
+        "from": "CS period",
+        "quantity": "Display frame period",
+        "result": "40.01 ms = 25.0 FPS (sigma 31 us)"
+      },
+      {
+        "from": "40.01 ms period - 36.30 ms CS-high width",
+        "quantity": "Full-frame transfer, 2304 B over SPI1 DMA @ 5 MHz",
+        "result": "3.71 ms (theory 3.69 ms)"
+      },
+      {
+        "from": "DBG1 period 1.000 ms - low width 0.4485 ms",
+        "quantity": "Record processing, timebase 0 (5 us/div, 200 samples)",
+        "result": "0.55 ms"
+      },
+      {
+        "from": "DBG1 period 20.46 ms - low width 4.74 ms",
+        "quantity": "Record processing, timebase 6 (500 us/div, 15238 samples)",
+        "result": "15.7 ms"
+      },
+      {
+        "from": "slope between the two timebases",
+        "quantity": "Processing cost per sample",
+        "result": "~1.0 us (~81 CPU cycles) + ~0.35 ms fixed"
+      },
+      {
+        "from": "DBG1 period",
+        "quantity": "Waveform update rate, timebase 0",
+        "result": "1000 records/s (every cycle of a 1 kHz input)"
+      },
+      {
+        "from": "1 / 20.46 ms; 4.74 / 20.46",
+        "quantity": "Waveform update rate, timebase 6",
+        "result": "49 records/s, 23 % live time"
+      },
+      {
+        "from": "Delay CH2 falling -> CH1 falling, forward; add 15.7 + 3.71 ms",
+        "quantity": "Capture-to-screen latency",
+        "result": "not measured yet"
+      }
+    ]
+  }
+}

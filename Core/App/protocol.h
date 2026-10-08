@@ -42,6 +42,7 @@ typedef enum {
     MSG_SET_TIMEBASE  = 0x11,  /* u8 index                                   */
     MSG_SET_TRIGGER   = 0x12,  /* u16 level, u16 hyst, u8 edge, u8 mode, u8 pre% */
     MSG_SET_SIGGEN    = 0x14,  /* u8 wave, u8 freq index                      */
+    MSG_SET_CONTRAST  = 0x15,  /* u16 Vop code (V0 = 3.6 V + code x 0.04 V)   */
     MSG_GET_CAPTURE   = 0x20,  /* u8 flags (bit0: take the current record)    */
     MSG_GET_MEAS      = 0x21,
     MSG_CAL_GET       = 0x30,  /* u8 range                                    */
